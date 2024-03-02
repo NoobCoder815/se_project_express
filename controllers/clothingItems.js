@@ -1,6 +1,7 @@
 const clothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST_ERROR,
+  NO_ACCESS_ERROR,
   NOT_FOUND_ERROR,
   SERVER_ERROR,
 } = require("../utils/errors");
@@ -40,10 +41,17 @@ const createItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   clothingItem
-    .findByIdAndRemove(itemId)
+    .findById(itemId)
     .orFail()
-    .then(() => {
-      res.send({ message: `${itemId} has been deleted` });
+    .then((item) => {
+      if (item.owner !== req.user._id) {
+        return res
+          .status(NO_ACCESS_ERROR)
+          .send({ message: "Can not delete this item!" });
+      }
+      clothingItem.findByIdAndRemove(itemId).then(() => {
+        res.send({ message: `${itemId} has been deleted` });
+      });
     })
     .catch((err) => {
       console.error(err);
