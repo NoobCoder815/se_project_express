@@ -24,9 +24,7 @@ const createItem = (req, res) => {
   const userId = req.user._id;
   clothingItem
     .create({ name, weather, imageUrl, owner: userId })
-    .then((item) => {
-      res.status(201).send({ data: item });
-    })
+    .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -44,14 +42,16 @@ const deleteItem = (req, res) => {
     .findById(itemId)
     .orFail()
     .then((item) => {
-      if (item.owner !== req.user._id) {
+      if (String(item.owner) !== req.user._id) {
         return res
           .status(NO_ACCESS_ERROR)
           .send({ message: "Can not delete this item!" });
       }
-      clothingItem.findByIdAndRemove(itemId).then(() => {
-        res.send({ message: `${itemId} has been deleted` });
-      });
+      return clothingItem
+        .findByIdAndRemove(itemId)
+        .then(() =>
+          res.status(200).send({ message: `${itemId} has been deleted` }),
+        );
     })
     .catch((err) => {
       console.error(err);

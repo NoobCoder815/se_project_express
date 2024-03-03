@@ -14,11 +14,11 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   bcrypt.hash(password, 10).then((hash) => {
     User.create({ name, avatar, email, password: hash })
-      .then((user) => {
+      .then((user) =>
         res
           .status(201)
-          .send({ name: user.name, avatar: user.avatar, email: user.email });
-      })
+          .send({ name: user.name, avatar: user.avatar, email: user.email }),
+      )
       .catch((err) => {
         console.error(err);
         if (err.name === "ValidationError") {
@@ -26,11 +26,11 @@ const createUser = (req, res) => {
             .status(BAD_REQUEST_ERROR)
             .send({ message: "Invalid data" });
         }
-        if (err.code === 11000)
+        if (err.code === 11000) {
           return res
             .status(CONFLICT_ERROR)
             .send({ message: "A user with this e-mail already exists!" });
-
+        }
         return res
           .status(SERVER_ERROR)
           .send({ message: "An error has occured on the server" });
@@ -46,30 +46,31 @@ const login = (req, res) => {
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
-      const { userId } = req.params;
-      const token = jwt.sign(
-        { _id: userId },
-        NODE_ENV === "production" ? JWT_SECRET : "our-little-secret",
-        {
-          expiresIn: "7d",
-        },
-      );
-      return res.status(200).send({ token });
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return Promise.reject(new Error("Incorrect email or password"));
+        }
+        const token = jwt.sign(
+          { _id: user._id },
+          NODE_ENV === "production" ? JWT_SECRET : "our-little-secret",
+          {
+            expiresIn: "7d",
+          },
+        );
+        return res.status(200).send({ token });
+      });
     })
     .catch((err) => {
       console.error(err);
+      if (err.message === "Incorrect email or password") {
+        return res.status(UNAUTHORIZED_ERROR).send({ message: "Invalid data" });
+      }
       return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.send(user))
@@ -90,9 +91,9 @@ const getCurrentUser = (req, res) => {
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;
   User.findByIdAndUpdate(
-    req.params.id,
+    req.user._id,
     { name, avatar },
-    { new: true, runValidators: true, upsert: true },
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((users) => res.send(users))
