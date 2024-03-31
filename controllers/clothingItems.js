@@ -9,7 +9,7 @@ const {
 const getItems = (req, res) => {
   clothingItem
     .find({})
-    .populate("owner")
+    // .populate("owner")
     .then((items) => res.send(items))
     .catch((err) => {
       console.error(err);
@@ -24,7 +24,7 @@ const createItem = (req, res) => {
   const userId = req.user._id;
   clothingItem
     .create({ name, weather, imageUrl, owner: userId })
-    .then((item) => res.status(201).send({ data: item }))
+    .then((item) => res.status(201).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -74,8 +74,9 @@ const likeItem = (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true },
     )
+    // .populate("owner")
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -97,8 +98,9 @@ const dislikeItem = (req, res) => {
       { $pull: { likes: req.user._id } },
       { new: true },
     )
+    // .populate("owner")
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {

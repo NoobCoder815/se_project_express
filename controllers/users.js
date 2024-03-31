@@ -20,7 +20,6 @@ const createUser = (req, res) => {
           .send({ name: user.name, avatar: user.avatar, email: user.email }),
       )
       .catch((err) => {
-        console.error(err);
         if (err.name === "ValidationError") {
           return res
             .status(BAD_REQUEST_ERROR)
