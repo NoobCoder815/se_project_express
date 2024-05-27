@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const auth = require("../middleware/auth");
+const { validateId, validateCreateItem } = require("../middleware/validation");
 const {
   getItems,
   createItem,
