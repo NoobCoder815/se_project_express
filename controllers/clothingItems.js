@@ -1,12 +1,7 @@
 const clothingItem = require("../models/clothingItem");
 const BadRequestError = require("../errors/bad-request-error");
 const NoAccessError = require("../errors/no-access-error");
-// const {
-//   BAD_REQUEST_ERROR,
-//   NO_ACCESS_ERROR,
-//   NOT_FOUND_ERROR,
-//   SERVER_ERROR,
-// } = require("../utils/errors");
+const NotFoundError = require("../errors/not-found-error");
 
 const getItems = (req, res, next) => {
   clothingItem
@@ -32,7 +27,7 @@ const createItem = (req, res, next) => {
       console.error(err);
       if (err.name === "ValidationError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
       // return res
       //   .status(SERVER_ERROR)
@@ -45,13 +40,13 @@ const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   clothingItem
     .findById(itemId)
-    // .orFail()
+    .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
         // return res
         //   .status(NO_ACCESS_ERROR)
         //   .send({ message: "Can not delete this item!" });
-        next(new NoAccessError("Can not delete this item!"));
+        return next(new NoAccessError("Can not delete this item!"));
       }
       return clothingItem
         .findByIdAndRemove(itemId)
@@ -61,12 +56,12 @@ const deleteItem = (req, res, next) => {
     })
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      // }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item not found!"));
+      }
       if (err.name === "CastError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
       // return res
       //   .status(SERVER_ERROR)
@@ -83,16 +78,16 @@ const likeItem = (req, res, next) => {
       { new: true },
     )
     // .populate("owner")
-    // .orFail()
+    .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      // }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item not found!"));
+      }
       if (err.name === "CastError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
       // return res
       //   .status(SERVER_ERROR)
@@ -109,16 +104,16 @@ const dislikeItem = (req, res, next) => {
       { new: true },
     )
     // .populate("owner")
-    // .orFail()
+    .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      // }
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Item not found!"));
+      }
       if (err.name === "CastError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
       // return res
       //   .status(SERVER_ERROR)

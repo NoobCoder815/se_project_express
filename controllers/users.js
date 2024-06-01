@@ -7,13 +7,6 @@ const ConflictError = require("../errors/conflict-error");
 const Error = require("../errors/error");
 const NotFoundError = require("../errors/not-found-error");
 const UnauthorizedError = require("../errors/unauthorized-error");
-// const {
-//   BAD_REQUEST_ERROR,
-//   UNAUTHORIZED_ERROR,
-//   NOT_FOUND_ERROR,
-//   CONFLICT_ERROR,
-//   SERVER_ERROR,
-// } = require("../utils/errors");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -29,13 +22,15 @@ const createUser = (req, res, next) => {
           // return res
           //   .status(BAD_REQUEST_ERROR)
           //   .send({ message: "Invalid data" });
-          next(new BadRequestError("Invalid data"));
+          return next(new BadRequestError("Invalid data"));
         }
         if (err.code === 11000) {
           // return res
           //   .status(CONFLICT_ERROR)
           //   .send({ message: "A user with this e-mail already exists!" });
-          next(new ConflictError("A user with this e-mail already exists!"));
+          return next(
+            new ConflictError("A user with this e-mail already exists!"),
+          );
         }
         // return res
         //   .status(SERVER_ERROR)
@@ -71,10 +66,10 @@ const login = (req, res, next) => {
       console.error(err);
       if (err.message === "Incorrect email or password") {
         // return res.status(UNAUTHORIZED_ERROR).send({ message: "Invalid data" });
-        next(new UnauthorizedError("Unauthorized"));
+        return next(new UnauthorizedError("Unauthorized"));
       }
       // return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
-      next(new BadRequestError("Invalid data"));
+      next(err);
     });
 };
 
@@ -95,7 +90,9 @@ const getCurrentUser = (req, res, next) => {
       // }
       if (err.name === "CastError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("The ID string is in an invalid format"));
+        return next(
+          new BadRequestError("The ID string is in an invalid format"),
+        );
       }
       // return res
       //   .status(SERVER_ERROR)
@@ -125,7 +122,7 @@ const updateUser = (req, res, next) => {
       // }
       if (err.name === "ValidationError") {
         // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-        next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
       next(err);
     });
