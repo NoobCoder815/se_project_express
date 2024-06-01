@@ -22,4 +22,4 @@ The project uses the Express framework and MongoDB database. Also Postman for te
 
 ### Domain
 
-The project can be found at domain [richj.crabdance.com](https:/richj.crabdance.com).
+The project can be found at domain [richj.crabdance.com](https://richj.crabdance.com).
