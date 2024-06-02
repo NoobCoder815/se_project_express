@@ -18,24 +18,16 @@ const createUser = (req, res, next) => {
           .send({ name: user.name, avatar: user.avatar, email: user.email }),
       )
       .catch((err) => {
+        console.error(err);
         if (err.name === "ValidationError") {
-          // return res
-          //   .status(BAD_REQUEST_ERROR)
-          //   .send({ message: "Invalid data" });
           return next(new BadRequestError("Invalid data"));
         }
         if (err.code === 11000) {
-          // return res
-          //   .status(CONFLICT_ERROR)
-          //   .send({ message: "A user with this e-mail already exists!" });
           return next(
             new ConflictError("A user with this e-mail already exists!"),
           );
         }
-        // return res
-        //   .status(SERVER_ERROR)
-        //   .send({ message: "An error has occured on the server" });
-        next(err);
+        return next(err);
       });
   });
 };
@@ -65,18 +57,15 @@ const login = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.message === "Incorrect email or password") {
-        // return res.status(UNAUTHORIZED_ERROR).send({ message: "Invalid data" });
         return next(new UnauthorizedError("Unauthorized"));
       }
-      // return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
-      next(err);
+      return next(err);
     });
 };
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
-    // .orFail()
     .then((user) => {
       if (!user) {
         throw new NotFoundError("No user with matching ID found");
@@ -85,19 +74,12 @@ const getCurrentUser = (req, res, next) => {
     })
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      // }
       if (err.name === "CastError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(
           new BadRequestError("The ID string is in an invalid format"),
         );
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
@@ -108,7 +90,6 @@ const updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true },
   )
-    // .orFail()
     .then((users) => {
       if (!users) {
         throw new NotFoundError("No user with matching ID found");
@@ -117,14 +98,10 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumetNotFound") {
-      //   return res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      // }
       if (err.name === "ValidationError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(new BadRequestError("Invalid data"));
       }
-      next(err);
+      return next(err);
     });
 };
 

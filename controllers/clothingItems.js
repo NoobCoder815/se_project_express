@@ -6,14 +6,10 @@ const NotFoundError = require("../errors/not-found-error");
 const getItems = (req, res, next) => {
   clothingItem
     .find({})
-    // .populate("owner")
     .then((items) => res.send(items))
     .catch((err) => {
       console.error(err);
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
@@ -26,13 +22,9 @@ const createItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(new BadRequestError("Invalid data"));
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
@@ -43,9 +35,6 @@ const deleteItem = (req, res, next) => {
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
-        // return res
-        //   .status(NO_ACCESS_ERROR)
-        //   .send({ message: "Can not delete this item!" });
         return next(new NoAccessError("Can not delete this item!"));
       }
       return clothingItem
@@ -60,13 +49,9 @@ const deleteItem = (req, res, next) => {
         return next(new NotFoundError("Item not found!"));
       }
       if (err.name === "CastError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(new BadRequestError("Invalid data"));
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
@@ -77,7 +62,6 @@ const likeItem = (req, res, next) => {
       { $addToSet: { likes: req.user._id } },
       { new: true },
     )
-    // .populate("owner")
     .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
@@ -86,13 +70,9 @@ const likeItem = (req, res, next) => {
         return next(new NotFoundError("Item not found!"));
       }
       if (err.name === "CastError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(new BadRequestError("Invalid data"));
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
@@ -103,7 +83,6 @@ const dislikeItem = (req, res, next) => {
       { $pull: { likes: req.user._id } },
       { new: true },
     )
-    // .populate("owner")
     .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
@@ -112,13 +91,9 @@ const dislikeItem = (req, res, next) => {
         return next(new NotFoundError("Item not found!"));
       }
       if (err.name === "CastError") {
-        // return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
         return next(new BadRequestError("Invalid data"));
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-      next(err);
+      return next(err);
     });
 };
 
